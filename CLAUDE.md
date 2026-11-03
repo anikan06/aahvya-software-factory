@@ -96,7 +96,7 @@ endpoints, roles or table columns that the spec and briefs don't define.
 
 ```bash
 pnpm install
-pnpm infra:up                 # docker compose: postgres, redis, keycloak, temporal, minio
+pnpm infra:up                 # docker compose: postgres, redis, keycloak, temporal, rustfs
 pnpm db:migrate               # apply migrations as factory_migrator
 pnpm db:migrate:down          # roll back one migration
 pnpm db:codegen               # regenerate Kysely types from the live schema

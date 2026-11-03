@@ -1,0 +1,137 @@
+# Local development stack (D-015). Local-only credentials; never reuse them elsewhere.
+# Images are pinned to exact tags. Ports bind to 127.0.0.1 only; override a host port
+# (e.g. POSTGRES_PORT=5433) if something else on your machine already uses it.
+name: factory
+
+services:
+  postgres:
+    image: postgres:16.15
+    container_name: factory-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local-postgres-superuser-password
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./containers/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U factory_migrator -d factory"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+
+  redis:
+    image: redis:7.4.12
+    container_name: factory-redis
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    container_name: factory-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: local-keycloak-admin-password
+      KC_HEALTH_ENABLED: "true"
+      KC_HTTP_PORT: "8080"
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8080}:8080"
+    volumes:
+      - ./containers/keycloak/factory-realm.json:/opt/keycloak/data/import/factory-realm.json:ro
+    healthcheck:
+      # The image ships without curl; probe the management port (9000) with bash.
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3 &&
+          grep -q '"status": "UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  temporal:
+    image: temporalio/temporal:1.10.0
+    container_name: factory-temporal
+    command:
+      - server
+      - start-dev
+      - --ip
+      - 0.0.0.0
+      - --ui-port
+      - "8233"
+      - --db-filename
+      - /home/temporal/temporal.db
+    ports:
+      - "127.0.0.1:${TEMPORAL_PORT:-7233}:7233"
+      - "127.0.0.1:${TEMPORAL_UI_PORT:-8233}:8233"
+    volumes:
+      - temporal-data:/home/temporal
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "127.0.0.1:7233"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  # S3-compatible artifact store. MinIO no longer publishes community images, so
+  # RustFS is used locally; the S3 API contract (S3_ENDPOINT / S3_BUCKET) is identical.
+  objectstore:
+    image: rustfs/rustfs:1.0.4
+    container_name: factory-objectstore
+    environment:
+      RUSTFS_ACCESS_KEY: local-s3-access-key
+      RUSTFS_SECRET_KEY: local-s3-secret-key
+    ports:
+      - "127.0.0.1:${S3_PORT:-9000}:9000"
+      - "127.0.0.1:${S3_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - objectstore-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  objectstore-init:
+    image: amazon/aws-cli:2.39.3
+    container_name: factory-objectstore-init
+    depends_on:
+      objectstore:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: local-s3-access-key
+      AWS_SECRET_ACCESS_KEY: local-s3-secret-key
+      AWS_DEFAULT_REGION: us-east-1
+    # Creates the bucket (idempotent), then idles so `up --wait` can treat it as a healthy
+    # service on every run; a one-shot container that has exited fails `--wait` on re-runs.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        (aws --endpoint-url http://objectstore:9000 s3api head-bucket --bucket factory-artifacts 2>/dev/null
+        || aws --endpoint-url http://objectstore:9000 s3api create-bucket --bucket factory-artifacts)
+        && exec sleep 2147483647
+    healthcheck:
+      test: ["CMD", "aws", "--endpoint-url", "http://objectstore:9000", "s3api", "head-bucket", "--bucket", "factory-artifacts"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 5s
+
+volumes:
+  postgres-data:
+  redis-data:
+  temporal-data:
+  objectstore-data:

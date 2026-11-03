@@ -99,8 +99,9 @@ compatible with the others before installing, and record the pinned versions in 
 - Contract tests: fixture-driven tests for every contract version in `libs/testing/contract-testing`.
 
 ### D-015 Local infrastructure
-- `infra/docker-compose.yml`: PostgreSQL 16, Redis 7, Keycloak, Temporal dev server + UI, MinIO (S3-compatible artifact store). Images pinned by exact tag.
-- Temporal and MinIO are started from E01 so the stack doesn't change shape later, but are unused until E04.
+- `infra/docker-compose.yml`: PostgreSQL 16, Redis 7, Keycloak, Temporal dev server + UI, RustFS (S3-compatible artifact store; MinIO dropped because it no longer publishes community container images). Images pinned by exact tag.
+- The application depends only on the S3 API (`S3_ENDPOINT`, `S3_BUCKET`), so the backend can be swapped without code changes.
+- Temporal and RustFS are started from E01 so the stack doesn't change shape later, but are unused until E04.
 
 ### D-016 Deployment packaging (shape only until E14)
 - Each app builds to its own container image (`infra/containers/<app>/Dockerfile`, non-root user, distroless or slim base).
