@@ -1,0 +1,86 @@
+# Tool profiles per agent class (spec 02 §7 permissions baseline, 04 §5 tool contracts, 04 §7 risk tiers).
+# Tool keys are "<server>:<tool>". The registry rejects unknown tools and any T3 tool.
+# riskCeiling is the highest tier the profile may ever call; the MCP gateway (E05) enforces it
+# together with project scope and policy. Profiles are versioned; changing one means a new version.
+apiVersion: factory.ai/v1
+kind: ToolProfileList
+profiles:
+  - key: analysis
+    version: 1.0.0
+    riskCeiling: T1
+    tools:
+      - mcp-jira:get_issue
+      - mcp-jira:search_issues
+      - mcp-jira:create_issue_draft
+      - mcp-docs:search_project_docs
+      - mcp-docs:create_doc_draft
+      - mcp-architecture:get_adr
+      - mcp-github:get_repository_context
+
+  - key: design
+    version: 1.0.0
+    riskCeiling: T1
+    tools:
+      - mcp-jira:get_issue
+      - mcp-docs:search_project_docs
+      - mcp-docs:create_doc_draft
+      - mcp-architecture:get_adr
+      - mcp-github:get_repository_context
+
+  - key: review
+    version: 1.0.0
+    riskCeiling: T0
+    tools:
+      - mcp-jira:get_issue
+      - mcp-docs:search_project_docs
+      - mcp-architecture:get_adr
+      - mcp-github:get_repository_context
+
+  - key: developer
+    version: 1.0.0
+    riskCeiling: T2
+    tools:
+      - mcp-jira:get_issue
+      - mcp-jira:add_comment
+      - mcp-docs:search_project_docs
+      - mcp-architecture:get_adr
+      - mcp-github:get_repository_context
+      - mcp-github:get_branch_protection
+      - mcp-github:create_branch
+      - mcp-github:create_pull_request
+      - mcp-github:get_pull_request
+      - mcp-testing:run_test_suite
+      - mcp-ci:get_workflow_run
+
+  - key: qa
+    version: 1.0.0
+    riskCeiling: T2
+    tools:
+      - mcp-jira:get_issue
+      - mcp-jira:add_comment
+      - mcp-github:get_repository_context
+      - mcp-github:get_pull_request
+      - mcp-testing:run_test_suite
+      - mcp-ci:get_workflow_run
+      - mcp-ci:get_quality_report
+
+  - key: security
+    version: 1.0.0
+    riskCeiling: T1
+    tools:
+      - mcp-jira:get_issue
+      - mcp-github:get_repository_context
+      - mcp-github:get_pull_request
+      - mcp-ci:get_workflow_run
+      - mcp-ci:get_quality_report
+      - mcp-testing:run_test_suite
+
+  - key: documentation
+    version: 1.0.0
+    riskCeiling: T1
+    tools:
+      - mcp-docs:search_project_docs
+      - mcp-docs:create_doc_draft
+      - mcp-architecture:get_adr
+      - mcp-github:get_repository_context
+      - mcp-github:get_pull_request

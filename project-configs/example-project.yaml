@@ -1,0 +1,50 @@
+# Example project onboarding config. Shape = ProjectConfig v1 (libs/shared/contracts, E02-03).
+# The portal wizard can import this file; the API stores the validated `config` in projects.config.
+# Credentials appear only as secret references.
+apiVersion: factory.ai/v1
+kind: ProjectConfig
+project:
+  key: aahvya
+  name: Aahvya Ordering Platform
+  description: WhatsApp-first restaurant ordering platform (pilot project)
+  defaultClassification: CONFIDENTIAL
+
+repositories:
+  - provider: GITHUB
+    fullName: your-org/aahvya
+    defaultBranch: develop
+    credentialSecretRef: env://GITHUB_PILOT_TOKEN        # LOCAL only; use vault://… elsewhere
+
+stack:
+  frontend: { framework: angular, packageManager: pnpm }
+  backend:  { framework: nestjs, packageManager: pnpm }
+  monorepo: nx
+  commands:                                             # what agents and CI may run
+    install: pnpm install --frozen-lockfile
+    lint: pnpm nx affected -t lint
+    typecheck: pnpm nx affected -t typecheck
+    test: pnpm nx affected -t test
+    build: pnpm nx affected -t build
+    e2e: pnpm nx affected -t e2e
+
+branches:
+  base: develop
+  agentBranchPattern: "ai/{workflowKey}-{taskKey}"
+
+paths:                                                  # default allowedPaths per agent class
+  developer: ["apps/**", "libs/**"]
+  qa: ["apps/**/*.spec.ts", "libs/**/*.spec.ts", "apps/*-e2e/**"]
+  protected: [".github/**", "nx.json", "package.json", "pnpm-lock.yaml"]
+
+agents:                                                 # optional semver pins (E03-01 resolution)
+  ba: "^1.0.0"
+  architect: "^1.0.0"
+
+policyBindings:
+  LOCAL: enterprise-default@2026.1-dev
+  DEV: enterprise-default@2026.1-dev
+  STAGING: enterprise-default@2026.1
+  PRODUCTION: enterprise-default@2026.1
+
+integrations:
+  jira: { projectKey: AAH }                             # wired in E05

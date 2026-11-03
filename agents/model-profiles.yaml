@@ -1,0 +1,24 @@
+# Model profiles: logical aliases agents refer to. Agents never name a provider model directly.
+# model_id is left null here; the adapter resolves it from deployment config per provider so an
+# enterprise can route the same alias through AWS Bedrock or Google Vertex instead of the
+# Anthropic API (decision D-017). Pin model_id per environment in config, not in this file.
+apiVersion: factory.ai/v1
+kind: ModelProfileList
+profiles:
+  - key: reasoning-large
+    provider: ANTHROPIC
+    modelAlias: reasoning-large
+    limits: { maxOutputTokens: 16000, contextWindowPolicy: summarize-artifacts }
+    use: Requirements, architecture and review work that needs deep reasoning.
+
+  - key: coding
+    provider: ANTHROPIC
+    modelAlias: coding
+    limits: { maxOutputTokens: 32000 }
+    use: Claude Code execution for implementation and test generation.
+
+  - key: fast
+    provider: ANTHROPIC
+    modelAlias: fast
+    limits: { maxOutputTokens: 8000 }
+    use: Classification, routing, summarisation and schema-repair attempts.

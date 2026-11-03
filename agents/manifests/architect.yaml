@@ -1,0 +1,46 @@
+# Agent manifest. Loaded by `pnpm agents:sync` (E03). Released versions are immutable:
+# any change to this file or the prompts it references requires a new `version`.
+apiVersion: factory.ai/v1
+kind: AgentManifest
+metadata:
+  agentKey: architect
+  version: 1.0.0
+  displayName: Architect
+  group: Architecture
+  class: DESIGN
+  owner: platform-ai-engineering
+  description: Produce HLD, LLD, ADRs and technical plans.
+spec:
+  prompts:
+    system: agents/prompts/_shared-system.md
+    task: agents/prompts/architect.md
+  # Skills are authored in E06. Uncomment and bump to 1.1.0 when they exist:
+  skills: []
+  #   - { key: architecture-design, version: 1.0.0 }
+  #   - { key: domain-modeling, version: 1.0.0 }
+  #   - { key: api-contract-design, version: 1.0.0 }
+  #   - { key: database-design, version: 1.0.0 }
+  supportedTaskTypes: [hld, lld, adr, technical-plan]
+  prohibitedActions: [merge, production-deploy, force-push, modify-branch-protection, modify-ci-protected-config, access-other-project]
+  toolProfile: design@1.0.0
+  modelProfile: reasoning-large
+  adapters: [CLAUDE_CODE]
+  contracts:
+    input: schema://agent-task-input/1.0
+    output: schema://agent-task-output/1.0
+  budgets:
+    maxDurationSeconds: 1800
+    maxToolCalls: 60
+    maxCostUsd: 10
+  retry:
+    transientRetries: 2
+    schemaRepairAttempts: 1
+  escalation:
+    onBlocked: REQUEST_HUMAN_INPUT
+    onPolicyViolation: STOP_AND_ESCALATE
+  # Must run as a different agent from these (spec 02 §8: reviewer distinct from author).
+  independentOf: []
+  defaultNextAction: REQUEST_ARCHITECTURE_REVIEW
+  evaluation:
+    suite: architect-golden      # dataset created in E13
+    minimumScore: 0.80
