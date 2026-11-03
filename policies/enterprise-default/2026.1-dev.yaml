@@ -1,0 +1,10 @@
+# Development variant of enterprise-default. Bind only to LOCAL or DEV environments.
+# Identical to 2026.1 except it allows promoting agents before E13's evaluation gate exists.
+# The policy service rejects binding this bundle to STAGING or PRODUCTION (E02-03).
+policyBundle:
+  id: enterprise-default
+  version: "2026.1-dev"
+  extends: "2026.1"
+  environmentsAllowed: [LOCAL, DEV]
+  agents:
+    allowPromotionWithoutEvaluation: true

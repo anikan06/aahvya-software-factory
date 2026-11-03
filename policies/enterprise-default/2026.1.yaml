@@ -1,0 +1,55 @@
+# Platform default policy bundle. Loaded by `pnpm policies:sync` (E02-03) as a platform bundle.
+# Base content is spec 06 §5. Sections marked "added" extend it for the registry and
+# orchestration epics. A released version is immutable: change content -> new version file.
+policyBundle:
+  id: enterprise-default
+  version: "2026.1"
+
+  execution:
+    requireProjectContext: true
+    requireWorkflowContext: true
+    maxConcurrentAgentsPerProject: 8
+    defaultTaskTimeoutSeconds: 1800
+    transientRetries: 2                      # added: spec 03 §7 default
+    toolTimeoutSeconds: 600                  # added: spec 03 §7 default
+
+  repository:
+    requireIsolatedWorkspace: true
+    protectedBranches:
+      - main
+      - master
+      - release/*
+    denyForcePush: true
+    denyDirectProtectedBranchWrite: true
+    agentBranchPrefix: ai/                   # added: branches agents may create
+
+  tools:
+    denyByDefault: true
+    denyAgentMerge: true
+    denyAgentProductionDeploy: true
+    requireIdempotencyForMutations: true
+    maxRiskTierForAgents: T2                 # added: spec 04 §7, T3 never autonomous
+
+  approvals:
+    requirements: PRODUCT_OWNER
+    architecture: SOLUTION_ARCHITECT
+    protectedBranchMerge: HUMAN_CODE_REVIEWER
+    productionDeployment: RELEASE_OWNER
+    requireSeparationOfDuties: true          # added: spec 06 §9
+    allowTimeoutAutoApproval: false          # added: spec 06 §9, must stay false
+
+  quality:
+    requireBuild: true
+    requireUnitTests: true
+    requireSecurityScan: true
+    failOnCriticalSecurityFinding: true
+
+  agents:                                    # added: used by agent resolution (E03-01)
+    allowed: []                              # empty = all registered agents allowed
+    denied: []
+    allowPromotionWithoutEvaluation: false   # must stay false outside LOCAL/DEV bundles
+
+  data:                                      # added: spec 06 §8
+    defaultClassification: INTERNAL
+    allowRestrictedDataInPrompts: false
+    retainRawPromptsDays: 30

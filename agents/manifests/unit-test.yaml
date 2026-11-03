@@ -1,0 +1,43 @@
+# Agent manifest. Loaded by `pnpm agents:sync` (E03). Released versions are immutable:
+# any change to this file or the prompts it references requires a new `version`.
+apiVersion: factory.ai/v1
+kind: AgentManifest
+metadata:
+  agentKey: unit-test
+  version: 1.0.0
+  displayName: Unit Test
+  group: Quality
+  class: QA
+  owner: platform-ai-engineering
+  description: Generate and run unit tests.
+spec:
+  prompts:
+    system: agents/prompts/_shared-system.md
+    task: agents/prompts/qa.md
+  # Skills are authored in E06. Uncomment and bump to 1.1.0 when they exist:
+  skills: []
+  #   - { key: test-engineering, version: 1.0.0 }
+  supportedTaskTypes: [generate-unit-tests, run-unit-tests]
+  prohibitedActions: [merge, production-deploy, force-push, modify-branch-protection, modify-ci-protected-config, access-other-project]
+  toolProfile: qa@1.0.0
+  modelProfile: coding
+  adapters: [CLAUDE_CODE]
+  contracts:
+    input: schema://agent-task-input/1.0
+    output: schema://agent-task-output/1.0
+  budgets:
+    maxDurationSeconds: 1500
+    maxToolCalls: 50
+    maxCostUsd: 8
+  retry:
+    transientRetries: 2
+    schemaRepairAttempts: 1
+  escalation:
+    onBlocked: REQUEST_HUMAN_INPUT
+    onPolicyViolation: STOP_AND_ESCALATE
+  # Must run as a different agent from these (spec 02 §8: reviewer distinct from author).
+  independentOf: [frontend-developer, backend-developer]
+  defaultNextAction: REQUEST_PR_REVIEW
+  evaluation:
+    suite: unit-test-golden      # dataset created in E13
+    minimumScore: 0.80
