@@ -22,7 +22,7 @@ user-facing beyond a health check and an empty portal shell.
   - `redis` 7.x
   - `keycloak` — dev mode, imports `infra/containers/keycloak/factory-realm.json` on start.
   - `temporal` — single-container dev server (Temporal CLI `server start-dev`, verify the current official image and command) with UI on 8233.
-  - `minio` — with a bucket-creation init container for `factory-artifacts`.
+  - `minio` (implemented as RustFS, see implementation-decisions.md) — with a bucket-creation init container for `factory-artifacts`.
 - `infra/containers/keycloak/factory-realm.json` with:
   - realm `factory`, public client `factory-portal` (Auth Code + PKCE, redirect `http://localhost:4200/*`), and an audience mapper so access tokens carry `aud: factory-api`.
   - Two test users: `alice` (will become org owner) and `bob` (no memberships). Passwords documented in the README as local-only.

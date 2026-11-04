@@ -1,0 +1,9 @@
+{
+  "name": "aahvya-software-factory",
+  "private": true,
+  "scripts": {
+    "infra:up": "docker compose -f infra/docker-compose.yml up -d --wait",
+    "infra:down": "docker compose -f infra/docker-compose.yml down",
+    "infra:reset": "docker compose -f infra/docker-compose.yml down -v --remove-orphans"
+  }
+}
