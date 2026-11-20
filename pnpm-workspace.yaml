@@ -7,5 +7,9 @@ allowBuilds:
   nx: true
   unrs-resolver: false
   '@nestjs/core': false
+  # testcontainers transitive deps: optional native speedups / version-check script; not needed.
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
 # Supply-chain guard (D-001): refuse packages published less than 14 days ago.
 minimumReleaseAge: 20160

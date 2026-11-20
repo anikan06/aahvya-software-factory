@@ -4,7 +4,7 @@
     "experimentalDecorators": true,
     "noPropertyAccessFromIndexSignature": true,
     "module": "preserve",
-    "rootDir": ".",
+    "rootDir": "../../..",
     "lib": ["es2023", "dom"]
   },
   "angularCompilerOptions": {

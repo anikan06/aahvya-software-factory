@@ -8,7 +8,13 @@
   "scripts": {
     "infra:up": "docker compose -f infra/docker-compose.yml up -d --wait",
     "infra:down": "docker compose -f infra/docker-compose.yml down",
-    "infra:reset": "docker compose -f infra/docker-compose.yml down -v --remove-orphans"
+    "infra:reset": "docker compose -f infra/docker-compose.yml down -v --remove-orphans",
+    "db:migrate": "node --env-file-if-exists=.env node_modules/node-pg-migrate/bin/node-pg-migrate.js -m db/migrations -d MIGRATION_DATABASE_URL --no-verbose up",
+    "db:migrate:down": "node --env-file-if-exists=.env node_modules/node-pg-migrate/bin/node-pg-migrate.js -m db/migrations -d MIGRATION_DATABASE_URL --no-verbose down",
+    "db:migrate:create": "node --env-file-if-exists=.env node_modules/node-pg-migrate/bin/node-pg-migrate.js -m db/migrations -d MIGRATION_DATABASE_URL --no-verbose create --migration-file-language sql --template-file-name db/migration-template.sql",
+    "db:codegen": "node --env-file-if-exists=.env node_modules/kysely-codegen/dist/cli/bin.js --dialect postgres --url 'env(MIGRATION_DATABASE_URL)' --out-file libs/infrastructure/postgres/src/generated/db.ts --exclude-pattern 'public.pgmigrations'",
+    "db:verify": "bash tools/scripts/db-verify.sh",
+    "dev": "bash tools/scripts/dev.sh"
   },
   "devDependencies": {
     "@angular-devkit/core": "22.2.3",
@@ -36,8 +42,10 @@
     "@swc-node/register": "1.12.1",
     "@swc/core": "1.16.18",
     "@swc/helpers": "0.5.23",
+    "@testcontainers/postgresql": "12.2.1",
     "@types/jest": "30.0.0",
     "@types/node": "26.6.5",
+    "@types/pg": "8.23.1",
     "@typescript-eslint/utils": "8.72.0",
     "angular-eslint": "22.6.0",
     "eslint": "10.13.0",
@@ -48,8 +56,11 @@
     "jest-environment-node": "30.3.0",
     "jest-preset-angular": "17.0.3",
     "jest-util": "30.3.0",
+    "kysely-codegen": "0.20.0",
+    "node-pg-migrate": "9.0.0",
     "nx": "23.3.0",
     "prettier": "3.9.10",
+    "testcontainers": "12.2.1",
     "ts-jest": "29.4.15",
     "ts-node": "10.9.1",
     "tslib": "2.8.1",
@@ -73,6 +84,8 @@
     "@nestjs/common": "11.2.7",
     "@nestjs/core": "11.2.7",
     "@nestjs/platform-express": "11.2.7",
+    "kysely": "0.28.19",
+    "pg": "8.23.1",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "zone.js": "0.16.3"
