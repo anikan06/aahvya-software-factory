@@ -109,3 +109,16 @@ compatible with the others before installing, and record the pinned versions in 
 
 ### D-017 Model access
 - `model_profiles` map a logical alias (`reasoning-large`, `coding`, `fast`) to a provider: `ANTHROPIC`, `AWS_BEDROCK` or `GOOGLE_VERTEX`. Agents reference aliases only, so an enterprise that permits Claude only through its cloud account switches provider by configuration.
+
+### D-018 Stack catalog permissions and bootstrap selection
+- Context: E15 (project bootstrap) introduces an organization-curated **stack catalog**. E02 requires a decision entry for any change to the permission matrix.
+- Three permissions are added to the E02 matrix; no new roles are introduced:
+  - `stack:read` — every role (the catalog is needed to see and choose options, and contains no secrets).
+  - `stack:manage` — Organization Owner and Platform Admin only (same shape as `agent:register`). Create stack profiles and versions, promote and deprecate them.
+  - `stack:select` — Project Admin and Solution Architect. Choose a stack profile version for a bootstrap run.
+- Approval of a stack decision is **not** a new permission: it is `approval:decide:architecture`, held by Solution Architect, bound to the hash of the stack-decision artifact (06 §9). The approver must differ from the agent that recommended the stack.
+- **Separation of duties:** the approver of a stack decision must be a different user from the one who selected it (`chosenBy`), even if that user holds both `stack:select` and `approval:decide:architecture`. Enforced at approval time and tested.
+- Selecting a stack never implies approving it. Admin roles gain no approval authority from `stack:manage` (consistent with 06 §3 and the E02 rule on admins).
+- Platform-level (cross-organization) stack profiles are not supported in v1; every profile is organization-owned and RLS-scoped.
+- Related E15 policy defaults recorded with this decision: `policy.bootstrap.maxClarificationRounds` = 3, `policy.bootstrap.maxStories` = 40, scaffolds contain no `.github/workflows/*` (the GitHub App never holds the `workflows` permission), and intake accepts Markdown and plain text only.
+- Why: keeps catalog curation central and separate from project-level selection, reuses the existing approval model, and keeps the GitHub App least-privilege.
