@@ -1,0 +1,36 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["es2023"],
+    "declaration": true,
+    "sourceMap": true,
+    "importHelpers": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@factory/shared/contracts": ["./libs/shared/contracts/src/index.ts"],
+      "@factory/shared/types": ["./libs/shared/types/src/index.ts"],
+      "@factory/shared/utilities": ["./libs/shared/utilities/src/index.ts"],
+      "@factory/api/platform": ["./libs/api/platform/src/index.ts"],
+      "@factory/infrastructure/postgres": [
+        "./libs/infrastructure/postgres/src/index.ts"
+      ],
+      "@factory/testing/test-utilities": [
+        "./libs/testing/test-utilities/src/index.ts"
+      ],
+      "@factory/ui/design-system": ["./libs/ui/design-system/src/index.ts"],
+      "@factory/ui/shell": ["./libs/ui/shell/src/index.ts"]
+    }
+  }
+}

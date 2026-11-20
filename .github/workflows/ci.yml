@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Format, lint, typecheck, test, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # Version comes from package.json#packageManager.
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Resolve affected base
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "sha=$(git merge-base origin/${{ github.base_ref }} HEAD)" >> "$GITHUB_OUTPUT"
+          else
+            echo "sha=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Format check
+        run: pnpm nx format:check --base=${{ steps.base.outputs.sha }} --head=HEAD
+
+      - name: Lint, typecheck, test, build (affected)
+        run: pnpm nx affected -t lint typecheck test build --base=${{ steps.base.outputs.sha }} --head=HEAD
+
+  database:
+    name: Database checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16.15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-postgres-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      PGPASSWORD: ci-only-postgres-password
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Bootstrap roles (same script as local infra)
+        run: psql -h localhost -U postgres -v ON_ERROR_STOP=1 -f infra/containers/postgres/init/01-roles.sql
+
+      # TODO(E01-02): replace with `pnpm install --frozen-lockfile && pnpm db:migrate && pnpm db:verify`
+      # once those scripts exist. Deliberately a visible no-op, not a silently skipped check.
+      - name: db:migrate and db:verify (pending E01-02)
+        run: echo "db:migrate / db:verify are added in E01-02; roles bootstrap above proves the service container works."
+
+  secrets-scan:
+    name: Secrets scan (gitleaks)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            detect --source /repo --redact --verbose
+
+  dependency-audit:
+    name: Dependency audit (report-only)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # Report-only for now (E01-01 brief); becomes blocking in a later epic.
+      - run: pnpm audit --audit-level high
+        continue-on-error: true
