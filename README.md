@@ -39,6 +39,12 @@ pnpm install
 pnpm infra:up                 # docker compose: postgres, redis, keycloak, temporal, rustfs
 pnpm infra:down               # stop, keep data
 pnpm infra:reset              # stop and delete all volumes
+cp .env.example .env          # once; fill in the local passwords from infra/README.md
+pnpm db:migrate               # apply migrations as factory_migrator
+pnpm db:migrate:down          # roll back one migration (pass a number to roll back more)
+pnpm db:migrate:create <name> # new SQL migration from the template
+pnpm db:codegen               # regenerate Kysely types from the live schema
+pnpm db:verify                # schema guard + RLS coverage checks
 pnpm nx serve factory-api
 pnpm nx serve factory-portal
 pnpm nx affected -t lint,typecheck,test,build
@@ -47,8 +53,9 @@ pnpm nx format:check --base=main                # formatting of changed files
 pnpm nx graph
 ```
 
-The database scripts (`db:migrate`, `db:migrate:down`, `db:codegen`, `db:verify`) arrive
-with story E01-02 and are listed in CLAUDE.md.
+Roles, migrations, rollback and row-level-security context are documented in
+[docs/build/database.md](docs/build/database.md). If port 5432 is already in use, run
+`POSTGRES_PORT=5433 pnpm infra:up` and use port 5433 in `.env`.
 
 ## Local credentials
 
