@@ -31,6 +31,9 @@ memberships on the project being accessed. Holding a role grants nothing outside
 | `agent:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `agent:register` | ✓ | ✓ | | | | | | | | | | |
 | `agent:promote` | | ✓ | | | | | | | | | | |
+| `stack:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `stack:manage` | ✓ | ✓ | | | | | | | | | | |
+| `stack:select` | | | ✓ | | ✓ | | | | | | | |
 | `workflow:start` | | | ✓ | ✓ | | ✓ | ✓ | | | | | |
 | `workflow:read` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `workflow:cancel` | | | ✓ | | | ✓ | | | | | | |
@@ -47,6 +50,7 @@ Rules that are not visible in the table:
 - Nobody can grant a role to themselves. The last `ORGANIZATION_OWNER` cannot be removed.
 - Owner and Platform Admin deliberately hold no `approval:decide:*` permission (06 §3: admins don't automatically gain approval authority). They must be granted the specific role.
 - Workflow and approval permissions are declared now so the map is complete; their endpoints arrive in E04/E08.
+- `stack:*` permissions are declared now per D-018 so the map is complete; their endpoints arrive in E15 (the stack catalog). `stack:select` lets a Project Admin or Solution Architect choose a stack for a bootstrap run; approving the choice remains `approval:decide:architecture`.
 
 ## Stories (in order)
 
