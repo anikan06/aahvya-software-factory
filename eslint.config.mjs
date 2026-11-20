@@ -1,0 +1,156 @@
+import nx from '@nx/eslint-plugin';
+
+export default [
+  ...nx.configs['flat/base'],
+  ...nx.configs['flat/typescript'],
+  ...nx.configs['flat/javascript'],
+  {
+    ignores: ['**/dist', '**/out-tsc', '**/.angular'],
+  },
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    rules: {
+      // Boundary rules from docs/build/repo-structure.md. Never disable or relax.
+      '@nx/enforce-module-boundaries': [
+        'error',
+        {
+          enforceBuildableLibDependency: true,
+          allow: [],
+          depConstraints: [
+            // scope
+            {
+              sourceTag: 'scope:portal',
+              onlyDependOnLibsWithTags: ['scope:portal', 'scope:shared'],
+            },
+            {
+              sourceTag: 'scope:api',
+              onlyDependOnLibsWithTags: [
+                'scope:api',
+                'scope:server',
+                'scope:shared',
+              ],
+            },
+            {
+              sourceTag: 'scope:worker',
+              onlyDependOnLibsWithTags: [
+                'scope:worker',
+                'scope:server',
+                'scope:shared',
+              ],
+            },
+            {
+              sourceTag: 'scope:server',
+              onlyDependOnLibsWithTags: ['scope:server', 'scope:shared'],
+            },
+            {
+              sourceTag: 'scope:shared',
+              onlyDependOnLibsWithTags: ['scope:shared'],
+            },
+            {
+              sourceTag: 'scope:tools',
+              onlyDependOnLibsWithTags: ['scope:server', 'scope:shared'],
+            },
+            // type
+            {
+              sourceTag: 'type:app',
+              onlyDependOnLibsWithTags: [
+                'type:feature',
+                'type:ui',
+                'type:application',
+                'type:domain',
+                'type:infrastructure',
+                'type:adapter',
+                'type:api',
+                'type:contract',
+                'type:util',
+              ],
+            },
+            {
+              sourceTag: 'type:feature',
+              onlyDependOnLibsWithTags: [
+                'type:feature',
+                'type:ui',
+                'type:contract',
+                'type:util',
+              ],
+            },
+            {
+              sourceTag: 'type:ui',
+              onlyDependOnLibsWithTags: ['type:ui', 'type:util'],
+            },
+            {
+              sourceTag: 'type:api',
+              onlyDependOnLibsWithTags: [
+                'type:application',
+                'type:domain',
+                'type:infrastructure',
+                'type:contract',
+                'type:util',
+              ],
+            },
+            {
+              sourceTag: 'type:application',
+              onlyDependOnLibsWithTags: [
+                'type:domain',
+                'type:contract',
+                'type:util',
+              ],
+            },
+            {
+              sourceTag: 'type:domain',
+              onlyDependOnLibsWithTags: [
+                'type:domain',
+                'type:contract',
+                'type:util',
+              ],
+            },
+            {
+              sourceTag: 'type:infrastructure',
+              onlyDependOnLibsWithTags: [
+                'type:domain',
+                'type:application',
+                'type:contract',
+                'type:util',
+              ],
+            },
+            {
+              sourceTag: 'type:adapter',
+              onlyDependOnLibsWithTags: [
+                'type:domain',
+                'type:application',
+                'type:contract',
+                'type:util',
+              ],
+            },
+            {
+              sourceTag: 'type:contract',
+              onlyDependOnLibsWithTags: ['type:contract', 'type:util'],
+            },
+            { sourceTag: 'type:util', onlyDependOnLibsWithTags: ['type:util'] },
+            {
+              sourceTag: 'type:testing',
+              onlyDependOnLibsWithTags: [
+                'type:domain',
+                'type:application',
+                'type:infrastructure',
+                'type:adapter',
+                'type:contract',
+                'type:util',
+                'type:testing',
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/ban-ts-comment': 'error',
+      'no-console': ['error', { allow: ['error', 'warn'] }],
+    },
+  },
+];

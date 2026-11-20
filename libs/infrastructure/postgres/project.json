@@ -1,0 +1,9 @@
+{
+  "name": "infrastructure-postgres",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/infrastructure/postgres/src",
+  "projectType": "library",
+  "tags": ["scope:server", "type:infrastructure"],
+  "// targets": "to see all targets run: nx show project infrastructure-postgres --web",
+  "targets": {}
+}

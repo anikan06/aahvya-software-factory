@@ -1,0 +1,11 @@
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': true
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
+  nx: true
+  unrs-resolver: false
+  '@nestjs/core': false
+# Supply-chain guard (D-001): refuse packages published less than 14 days ago.
+minimumReleaseAge: 20160

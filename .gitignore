@@ -1,5 +1,21 @@
+# secrets / local env
 .env
 .env.*
 !.env.example
+
+# dependencies and build output
 node_modules/
+dist/
+out-tsc/
+.angular/
+coverage/
+test-output/
+playwright-report/
+blob-report/
+.nx/cache
+.nx/workspace-data
+.nx/polygraph
+
+# OS / editor
 .DS_Store
+.vscode/
